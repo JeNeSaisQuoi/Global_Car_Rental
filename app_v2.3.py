@@ -10,12 +10,12 @@ from PySide6.QtWidgets import (
     QTableView,
     QMessageBox,
 )
-from PySide6.QtGui import QDesktopServices, QAction
+from PySide6.QtGui import QDesktopServices, QAction, QIcon
 from PySide6.QtSql import QSqlDatabase, QSqlTableModel, QSqlQuery
 from PySide6.QtWidgets import QAbstractItemView
 
 
-# --- Database connection helper ---
+# --- Database connection checker ---
 def connect_to_sqlite_db(db_file):
     db = QSqlDatabase.addDatabase("QSQLITE")
     db.setDatabaseName(db_file)
@@ -27,7 +27,7 @@ def connect_to_sqlite_db(db_file):
     return db
 
 
-# --- WhatsApp placeholder functions ---
+# --- WhatsApp functions ---
 def wa_cars_coming_today():
     print("Cars coming action triggered.")
 
@@ -95,7 +95,7 @@ class MainWindow(QMainWindow):
             if self.db:
                 self.model_available_cars = QSqlTableModel(self, self.db)
                 self.model_available_cars.setTable("cars")
-                self.model_available_cars.setFilter("is_available = 1")
+                self.model_available_cars.setFilter("is_available = 1") # .setFilter used to filter db
                 self.model_available_cars.select()
 
                 self.table_view_available_cars = QTableView()
@@ -154,7 +154,7 @@ class MainWindow(QMainWindow):
             if results:
                 text = "\n\t".join(results)
                 QApplication.clipboard().setText(f"Available cars:\n\t{text}")
-                QMessageBox.information(self, "Copied", "All 'Available cars' are copied to the clipboard")
+                QMessageBox.information(self, "Copied", "'Available cars' was copied to clipboard")
             else:
                 QMessageBox.information(self, "No Results", "No available cars found.")
         else:
@@ -164,6 +164,8 @@ class MainWindow(QMainWindow):
 # --- Run app ---
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    icon = QIcon("icon/icon1.ico")
     window = MainWindow()
+    window.setWindowIcon(icon)
     window.show()
     sys.exit(app.exec())
