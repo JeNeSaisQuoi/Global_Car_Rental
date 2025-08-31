@@ -44,86 +44,90 @@ def wa_return_car_procedure():
     else:
         print(f"Failed to open: {url_to_open}")
 
-
-# --- Main window ---
 class MainWindow(QMainWindow):
     def __init__(self):
-        super().__init__()
-        self.setWindowTitle("Global Car Rental")
-        self.setGeometry(200, 100, 1000, 600)
+            super().__init__()
+            self.setWindowTitle("Global Car Rental")
+            self.setGeometry(200, 100, 1000, 600)
 
-        # --- Database ---
-        self.db = connect_to_sqlite_db("car_rental.db")
-        if not self.db:
-            QMessageBox.critical(self, "Database Error", "Failed to connect to database.")
+            # --- Database ---
+            self.db = connect_to_sqlite_db("car_rental.db")
+            if not self.db:
+                QMessageBox.critical(self, "Database Error", "Failed to connect to database.")
 
-        # --- Main model for All Cars ---
-        self.model_all_cars = None
-        if self.db:
-            self.model_all_cars = QSqlTableModel(self, self.db)
-            self.model_all_cars.setTable("cars")
-            self.model_all_cars.select()
+            # --- Central widget & layout ---
+            central_widget = QWidget()
+            self.setCentralWidget(central_widget)
+            main_layout = QHBoxLayout(central_widget)
 
-        # --- Central widget & layout ---
-        central_widget = QWidget()
-        self.setCentralWidget(central_widget)
-        main_layout = QHBoxLayout(central_widget)
+            # --- Side tabs ---
+            self.side_tabs = QTabWidget()
+            self.side_tabs.setTabPosition(QTabWidget.TabPosition.West)  # vertical tabs on the left
+            main_layout.addWidget(self.side_tabs)
 
-        # --- Side tabs ---
-        self.side_tabs = QTabWidget()
-        # self.side_tabs.setFixedWidth(200)
-        self.side_tabs.setTabPosition(QTabWidget.TabPosition.West)  # vertical tabs left
+            # Tabs
+            self.tab_all_cars = QWidget()
+            self.tab_available_cars = QWidget()
+            self.tab_rentals = QWidget()
+            self.tab_returning_today = QWidget()
 
-        # Tabs placeholders
-        self.tab_all_cars = QWidget()
-        self.tab_available_cars = QWidget()
-        self.tab_rentals = QWidget()
-        self.tab_returning_today = QWidget()
+            self.side_tabs.addTab(self.tab_all_cars, "Master Inventory")
+            self.side_tabs.addTab(self.tab_available_cars, "Available Cars")
+            self.side_tabs.addTab(self.tab_rentals, "Rented Out")
+            self.side_tabs.addTab(self.tab_returning_today, "Returning Soon")
 
-        self.side_tabs.addTab(self.tab_all_cars, "Master Inventory")
-        self.side_tabs.addTab(self.tab_available_cars, "Available Cars")
-        self.side_tabs.addTab(self.tab_rentals, "Rented Out")
-        self.side_tabs.addTab(self.tab_returning_today, "Returning Soon")
+            # --- Master Inventory (all cars) ---
+            if self.db:
+                self.model_all_cars = QSqlTableModel(self, self.db)
+                self.model_all_cars.setTable("cars")
+                self.model_all_cars.select()
 
-        # --- Main table view ---
-        self.table_view_all_cars = QTableView()
-        if self.model_all_cars:
-            self.table_view_all_cars.setModel(self.model_all_cars)
-            self.table_view_all_cars.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
-            self.table_view_all_cars.resizeColumnsToContents()
-            self.table_view_all_cars.verticalHeader().setVisible(False)
+                self.table_view_all_cars = QTableView()
+                self.table_view_all_cars.setModel(self.model_all_cars)
+                self.table_view_all_cars.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+                self.table_view_all_cars.resizeColumnsToContents()
+                self.table_view_all_cars.verticalHeader().setVisible(False)
 
-        # --- Add widgets to layout ---
-        main_layout.addWidget(self.side_tabs)           # left tabs (static)
-        main_layout.addWidget(self.table_view_all_cars) # main content table
-        main_layout.setStretch(0, 0)  # tabs fixed
-        main_layout.setStretch(1, 1)  # table expands
+                layout_all = QHBoxLayout(self.tab_all_cars)
+                layout_all.addWidget(self.table_view_all_cars)
 
-        # --- Menu bar ---
-        menu_bar = self.menuBar()
-        file_menu = menu_bar.addMenu("&File")
+            # --- Available Cars ---
+            if self.db:
+                self.model_available_cars = QSqlTableModel(self, self.db)
+                self.model_available_cars.setTable("cars")
+                self.model_available_cars.setFilter("is_available = 1")
+                self.model_available_cars.select()
 
-        # Show Available Cars (copies to clipboard)
-        action_ac = QAction("Available Cars- clipboard", self)
-        action_ac.triggered.connect(self.show_available_cars)
-        file_menu.addAction(action_ac)
+                self.table_view_available_cars = QTableView()
+                self.table_view_available_cars.setModel(self.model_available_cars)
+                self.table_view_available_cars.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+                self.table_view_available_cars.resizeColumnsToContents()
+                self.table_view_available_cars.verticalHeader().setVisible(False)
 
-        # WhatsApp actions
-        action_cc = QAction("Cars Coming Today", self)
-        action_cc.triggered.connect(wa_cars_coming_today)
-        file_menu.addAction(action_cc)
+                layout_avail = QHBoxLayout(self.tab_available_cars)
+                layout_avail.addWidget(self.table_view_available_cars)
 
-        action_rcm = QAction("Return Car Message", self)
-        action_rcm.triggered.connect(wa_return_car_procedure)
-        file_menu.addAction(action_rcm)
+            # --- Menu Bar ---
+            menu_bar = self.menuBar()
+            file_menu = menu_bar.addMenu("&File")
 
-        file_menu.addSeparator()
+            action_ac = QAction("Available Cars - clipboard", self)
+            action_ac.triggered.connect(self.show_available_cars)
+            file_menu.addAction(action_ac)
 
-        # Exit
-        exit_action = QAction("Exit", self)
-        exit_action.triggered.connect(self.close)
-        file_menu.addAction(exit_action)
+            action_cc = QAction("Cars Coming Today", self)
+            action_cc.triggered.connect(wa_cars_coming_today)
+            file_menu.addAction(action_cc)
 
+            action_rcm = QAction("Return Car Message", self)
+            action_rcm.triggered.connect(wa_return_car_procedure)
+            file_menu.addAction(action_rcm)
+
+            file_menu.addSeparator()
+
+            exit_action = QAction("Exit", self)
+            exit_action.triggered.connect(self.close)
+            file_menu.addAction(exit_action)
 
     # --- Copy available cars to clipboard ---
     def show_available_cars(self):
