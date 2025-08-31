@@ -1,0 +1,20 @@
+To Do List - Priorities: 
+
+-2. Set up .git local repository
+
+-1. Post this text file to the GUI so I can look at it dynamically
+	- fun little side project
+
+0. Set up view for the "Available" tab
+
+1. Create a dynamic way to edit database file via GUI (abstractly)
+	-add new entry
+	-edit existing entry
+
+2. Create a query search feature
+	-use a text search dialog box that updates in real time
+
+3. Set up a way to import current rentals
+	- have to clean data to the max before creating table
+
+4. Set up tabs to connect to other views of DB file (rentals)
