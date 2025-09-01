@@ -1,5 +1,7 @@
 import sys
 from datetime import datetime
+
+from PySide6 import QtWidgets
 from PySide6.QtCore import QUrl, Qt
 from PySide6.QtWidgets import (
     QApplication,
@@ -8,9 +10,9 @@ from PySide6.QtWidgets import (
     QTabWidget,
     QHBoxLayout,
     QTableView,
-    QMessageBox,
+    QMessageBox, QLineEdit, QWidgetAction, QMenu,
 )
-from PySide6.QtGui import QDesktopServices, QAction, QIcon, QKeySequence, QShortcut
+from PySide6.QtGui import QDesktopServices, QAction, QIcon, QKeySequence, QShortcut, QColor
 from PySide6.QtSql import QSqlDatabase, QSqlTableModel, QSqlQuery
 from PySide6.QtWidgets import QAbstractItemView
 
@@ -113,9 +115,22 @@ class MainWindow(QMainWindow):
                 layout_avail = QHBoxLayout(self.tab_available_cars)
                 layout_avail.addWidget(self.table_view_available_cars)
 
+
             # --- Menu Bar ---
             menu_bar = self.menuBar()
             file_menu = menu_bar.addMenu("&File")
+
+
+            # --- SEARCH TOOLBAR QLineEdit ---
+            toolbar = self.addToolBar("Main Toolbar")
+            toolbar.setMovable(False)  # keep it static
+
+            self.search_box = QLineEdit()
+            self.search_box.setPlaceholderText("Search cars...")
+            self.search_box.setFixedWidth(200)
+
+            toolbar.addWidget(self.search_box)
+            toolbar.addSeparator()
 
             action_ac = QAction("Available Cars - clipboard", self)
             action_ac.triggered.connect(self.clipboard_avail_cars)
