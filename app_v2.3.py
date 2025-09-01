@@ -1,6 +1,6 @@
 import sys
 from datetime import datetime
-from PySide6.QtCore import QUrl
+from PySide6.QtCore import QUrl, Qt
 from PySide6.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -10,7 +10,7 @@ from PySide6.QtWidgets import (
     QTableView,
     QMessageBox,
 )
-from PySide6.QtGui import QDesktopServices, QAction, QIcon
+from PySide6.QtGui import QDesktopServices, QAction, QIcon, QKeySequence, QShortcut
 from PySide6.QtSql import QSqlDatabase, QSqlTableModel, QSqlQuery
 from PySide6.QtWidgets import QAbstractItemView
 
@@ -49,6 +49,12 @@ class MainWindow(QMainWindow):
             super().__init__()
             self.setWindowTitle("Global Car Rental")
             self.setGeometry(200, 100, 1000, 600)
+
+            # Shortcut for cycling tabs forward
+            shortcut_next_tab = QShortcut(QKeySequence("Ctrl+Tab"), self)
+            shortcut_next_tab.setContext(Qt.ShortcutContext.ApplicationShortcut)
+            shortcut_next_tab.activated.connect(self.cycle_tabs)
+
 
             # --- Database ---
             self.db = connect_to_sqlite_db("car_rental.db")
@@ -112,7 +118,7 @@ class MainWindow(QMainWindow):
             file_menu = menu_bar.addMenu("&File")
 
             action_ac = QAction("Available Cars - clipboard", self)
-            action_ac.triggered.connect(self.show_available_cars)
+            action_ac.triggered.connect(self.clipboard_avail_cars)
             file_menu.addAction(action_ac)
 
             action_cc = QAction("Cars Coming Today", self)
@@ -129,8 +135,13 @@ class MainWindow(QMainWindow):
             exit_action.triggered.connect(self.close)
             file_menu.addAction(exit_action)
 
+    def cycle_tabs(self):
+        current = self.side_tabs.currentIndex()
+        count = self.side_tabs.count()
+        self.side_tabs.setCurrentIndex((current + 1) % count)
+
     # --- Copy available cars to clipboard ---
-    def show_available_cars(self):
+    def clipboard_avail_cars(self):
         if not self.db or not self.db.isOpen():
             QMessageBox.warning(self, "Database Error", "Database connection is not open.")
             return
