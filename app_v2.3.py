@@ -50,7 +50,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
             super().__init__()
             self.setWindowTitle("Global Car Rental")
-            self.setGeometry(200, 100, 1000, 600)
+            self.setGeometry(200, 100, 1100, 650)
 
             # Shortcut for cycling tabs forward
             shortcut_next_tab = QShortcut(QKeySequence("Ctrl+Tab"), self)
@@ -121,7 +121,7 @@ class MainWindow(QMainWindow):
             file_menu = menu_bar.addMenu("&File")
 
 
-            # --- SEARCH TOOLBAR QLineEdit ---
+            # --- SEARCH TOOLBAR with a QLineEdit ---
             toolbar = self.addToolBar("Main Toolbar")
             toolbar.setMovable(False)  # keep it static
 
