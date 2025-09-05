@@ -196,4 +196,44 @@ if __name__ == "__main__":
     window = MainWindow()
     window.setWindowIcon(icon)
     window.show()
+
+    # --- BULK EDIT SCRIPT TO UPDATE car_code COLUMN ---
+    db = connect_to_sqlite_db("car_rental.db")
+    if not db:
+        exit()
+
+    # Step 1: Fetch car_code + registration
+    query = QSqlQuery(db)
+    if not query.exec("SELECT id, car_code, registration FROM cars"):
+        print("Select has failed:", query.lastError().text())
+        exit()
+
+    # Step 2: Loop through results and compute new car_code
+    while query.next():
+        car_id = query.value(0)
+        car_code = query.value(1)
+        registration = query.value(2)
+
+        if not car_code or not registration:
+            continue  # skip incomplete rows
+
+        # Chop car_code after 8 chars
+        base = car_code[:8]
+
+        # Append registration (you can format here if needed)
+        new_code = f"{base}{registration}"
+
+        # Step 3: Update row
+        update = QSqlQuery(db)
+        update.prepare("UPDATE cars SET car_code = ? WHERE id = ?")
+        update.addBindValue(new_code)
+        update.addBindValue(car_id)
+        if not update.exec():
+            print(f"Update failed for {car_id}: {update.lastError().text()}")
+        else:
+            print(f"Updated car {car_id}: {car_code} -> {new_code}")
+
+    db.close()
+
+
     sys.exit(app.exec())
