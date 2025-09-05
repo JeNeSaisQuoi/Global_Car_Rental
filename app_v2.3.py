@@ -137,6 +137,7 @@ class MainWindow(QMainWindow):
                 self.model_available_cars = QSqlTableModel(self, self.db)
                 self.model_available_cars.setTable("cars")
                 self.model_available_cars.setFilter("is_available = 1") # .setFilter used to filter db
+                self.model_available_cars.setSort(1, Qt.SortOrder.AscendingOrder)  # default hard-code sort by column index 1
                 self.model_available_cars.select()
 
                 self.table_view_available_cars = QTableView()
@@ -144,6 +145,8 @@ class MainWindow(QMainWindow):
                 self.table_view_available_cars.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
                 self.table_view_available_cars.resizeColumnsToContents()
                 self.table_view_available_cars.verticalHeader().setVisible(False)
+                # --- Enable interactive sorting by clicking headers ---
+                self.table_view_available_cars.setSortingEnabled(True)
 
                 layout_avail = QHBoxLayout(self.tab_available_cars)
                 layout_avail.addWidget(self.table_view_available_cars)
