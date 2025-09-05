@@ -52,16 +52,44 @@ class MainWindow(QMainWindow):
             self.setWindowTitle("Global Car Rental")
             self.setGeometry(200, 100, 1100, 650)
 
-            # Shortcut for cycling tabs forward
-            shortcut_next_tab = QShortcut(QKeySequence("Ctrl+Tab"), self)
-            shortcut_next_tab.setContext(Qt.ShortcutContext.ApplicationShortcut)
-            shortcut_next_tab.activated.connect(self.cycle_tabs)
-
-
             # --- Database ---
             self.db = connect_to_sqlite_db("car_rental.db")
             if not self.db:
                 QMessageBox.critical(self, "Database Error", "Failed to connect to database.")
+
+            # --- Menu Bar ---
+            menu_bar = self.menuBar()
+            file_menu = menu_bar.addMenu("&File")
+
+            # --- SEARCH TOOLBAR with a QLineEdit ---
+            toolbar = self.addToolBar("Main Toolbar")
+            toolbar.setMovable(False)  # keep it static
+
+            self.search_box = QLineEdit()
+            self.search_box.setPlaceholderText("Search cars...")
+            self.search_box.setFixedWidth(200)
+
+            toolbar.addWidget(self.search_box)
+            toolbar.addSeparator()
+
+            action_ac = QAction("Available Cars - clipboard", self)
+            action_ac.triggered.connect(self.clipboard_avail_cars)
+            file_menu.addAction(action_ac)
+
+            action_cc = QAction("Cars Coming Today", self)
+            action_cc.triggered.connect(wa_cars_coming_today)
+            file_menu.addAction(action_cc)
+
+            action_rcm = QAction("Return Car Message", self)
+            action_rcm.triggered.connect(wa_return_car_procedure)
+            file_menu.addAction(action_rcm)
+
+            file_menu.addSeparator()
+
+            exit_action = QAction("Exit", self)
+            exit_action.triggered.connect(self.close)
+            file_menu.addAction(exit_action)
+
 
             # --- Central widget & layout ---
             central_widget = QWidget()
@@ -72,6 +100,11 @@ class MainWindow(QMainWindow):
             self.side_tabs = QTabWidget()
             self.side_tabs.setTabPosition(QTabWidget.TabPosition.West)  # vertical tabs on the left
             main_layout.addWidget(self.side_tabs)
+
+            # Shortcut for cycling tabs forward
+            shortcut_next_tab = QShortcut(QKeySequence("Ctrl+Tab"), self)
+            shortcut_next_tab.setContext(Qt.ShortcutContext.ApplicationShortcut)
+            shortcut_next_tab.activated.connect(self.cycle_tabs)
 
             # Tabs
             self.tab_all_cars = QWidget()
@@ -115,40 +148,6 @@ class MainWindow(QMainWindow):
                 layout_avail = QHBoxLayout(self.tab_available_cars)
                 layout_avail.addWidget(self.table_view_available_cars)
 
-
-            # --- Menu Bar ---
-            menu_bar = self.menuBar()
-            file_menu = menu_bar.addMenu("&File")
-
-
-            # --- SEARCH TOOLBAR with a QLineEdit ---
-            toolbar = self.addToolBar("Main Toolbar")
-            toolbar.setMovable(False)  # keep it static
-
-            self.search_box = QLineEdit()
-            self.search_box.setPlaceholderText("Search cars...")
-            self.search_box.setFixedWidth(200)
-
-            toolbar.addWidget(self.search_box)
-            toolbar.addSeparator()
-
-            action_ac = QAction("Available Cars - clipboard", self)
-            action_ac.triggered.connect(self.clipboard_avail_cars)
-            file_menu.addAction(action_ac)
-
-            action_cc = QAction("Cars Coming Today", self)
-            action_cc.triggered.connect(wa_cars_coming_today)
-            file_menu.addAction(action_cc)
-
-            action_rcm = QAction("Return Car Message", self)
-            action_rcm.triggered.connect(wa_return_car_procedure)
-            file_menu.addAction(action_rcm)
-
-            file_menu.addSeparator()
-
-            exit_action = QAction("Exit", self)
-            exit_action.triggered.connect(self.close)
-            file_menu.addAction(exit_action)
 
     def cycle_tabs(self):
         current = self.side_tabs.currentIndex()
